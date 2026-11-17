@@ -1,0 +1,26 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+    // The next line contains string s, which represents the colors of the stones.
+    // We'll consider the stones in the row numbered from 1 to n from left to right. 
+    // Then the i-th character s equals "R", 
+    // if the i-th stone is red, "G", 
+    // if it's green and "B", if it's blue.
+
+    // input 5 RRRRR
+    // output 4
+    int n;
+    cin >> n;
+    string colours;
+    cin >> colours;
+    int change = 0;
+
+    for (int i = 0; i < n; i++) {
+        if(colours[i] == colours[i-1])
+        change++;
+    }
+    cout << change;
+    
+        
+}

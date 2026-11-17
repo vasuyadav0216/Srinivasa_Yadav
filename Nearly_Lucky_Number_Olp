@@ -1,0 +1,26 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+
+    string number;
+    int count = 0;
+
+    cin >> number;
+    for (int i = 0; i < number.size(); i++) 
+    {
+        if (number[i] == '4' || number[i] == '7')
+            count++;
+
+    }
+
+    // Print on the single line "YES" if n is a nearly lucky number. 
+    if (count == 4 || count == 7)
+        cout << "YES";
+
+    // Otherwise, print "NO" (without the quotes).
+    else
+        cout << "NO";
+
+
+}

@@ -1,0 +1,24 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+
+    int colour1,colour2,colour3,colour4;
+    cin >> colour1 >> colour2 >> colour3 >> colour4;
+
+    int change = 0;
+
+    if(colour1 == colour2 || colour1 == colour3 || colour1 == colour4)
+        change++;
+
+
+    if (colour2 == colour3 || colour2 == colour4)
+    change++;
+
+    
+    if(colour3 == colour4)
+    change++;
+
+
+    cout << change;
+}

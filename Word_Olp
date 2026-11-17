@@ -1,0 +1,34 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+
+    int  capital = 0;
+    int  small = 0;
+
+    string v;
+    cin >> v;
+    
+    for (int i = 0; i < v.size(); i++) {
+        if (v[i] >= 'A' && v[i] <= 'Z')
+        capital++;
+
+        else if (v[i] >= 'a' && v[i] <= 'z')
+        small++;
+    }
+
+
+    for (int i = 0; i < v.size(); i++)
+    {
+        if (capital > small    &&   v[i] >= 'a'   &&   v[i] <= 'z')
+            v[i] -= 32;
+
+
+        else if (capital <= small  &&   v[i] >= 'A'   &&   v[i] <= 'Z')
+            v[i] += 32;
+    }
+
+    cout << v;
+
+
+}
