@@ -1,0 +1,78 @@
+PS C:\Users\Administrator\Desktop\SRINIVASA_YADAV> git --version
+git version 2.56.1.windows.1
+PS C:\Users\Administrator\Desktop\SRINIVASA_YADAV> git init .
+Reinitialized existing Git repository in C:/Users/Administrator/Desktop/SRINIVASA_YADAV/.git/
+PS C:\Users\Administrator\Desktop\SRINIVASA_YADAV> git status
+On branch master
+Your branch is up to date with 'origin/master'.
+
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        deleted:    a.cpp
+        deleted:    b.cpp
+        deleted:    c.cpp
+        deleted:    d.cpp
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        Password
+        Team_Olp
+        Watermelon_Olp
+        Way_Too_Long_Words_Olp
+
+no changes added to commit (use "git add" and/or "git commit -a")
+PS C:\Users\Administrator\Desktop\SRINIVASA_YADAV> git add .
+PS C:\Users\Administrator\Desktop\SRINIVASA_YADAV> git status
+On branch master
+Your branch is up to date with 'origin/master'.
+
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+        new file:   Password
+        new file:   Team_Olp
+        new file:   Watermelon_Olp
+        new file:   Way_Too_Long_Words_Olp
+        deleted:    a.cpp
+        deleted:    b.cpp
+        deleted:    c.cpp
+        deleted:    d.cpp
+
+PS C:\Users\Administrator\Desktop\SRINIVASA_YADAV> git commit -m "codeforces"
+[master e8794a4] codeforces
+ 8 files changed, 61 insertions(+), 193 deletions(-)
+ create mode 100644 Password
+ create mode 100644 Team_Olp
+ create mode 100644 Watermelon_Olp
+ create mode 100644 Way_Too_Long_Words_Olp
+ delete mode 100644 a.cpp
+ delete mode 100644 b.cpp
+ delete mode 100644 c.cpp
+ delete mode 100644 d.cpp
+PS C:\Users\Administrator\Desktop\SRINIVASA_YADAV> git remote add origin https://github.com/vasuyadav0216/Srinivasa_Yadav.git
+error: remote origin already exists.
+PS C:\Users\Administrator\Desktop\SRINIVASA_YADAV> git remote -v 
+origin  https://github.com/vasuyadav0216/Coder_Vasu.git (fetch)
+origin  https://github.com/vasuyadav0216/Coder_Vasu.git (push)
+PS C:\Users\Administrator\Desktop\SRINIVASA_YADAV> git push -u origin master
+remote: Repository not found.
+fatal: repository 'https://github.com/vasuyadav0216/Coder_Vasu.git/' not found
+PS C:\Users\Administrator\Desktop\SRINIVASA_YADAV>  git remote set-url origin https://github.com/vasuyadav0216/Srinivasa_Yadav.git 
+PS C:\Users\Administrator\Desktop\SRINIVASA_YADAV> git remote -v                                                                  
+origin  https://github.com/vasuyadav0216/Srinivasa_Yadav.git (fetch)
+origin  https://github.com/vasuyadav0216/Srinivasa_Yadav.git (push)
+PS C:\Users\Administrator\Desktop\SRINIVASA_YADAV> git push -u origin master                                                      
+Enumerating objects: 12, done.
+Counting objects: 100% (12/12), done.
+Delta compression using up to 6 threads
+Compressing objects: 100% (12/12), done.
+Writing objects: 100% (12/12), 2.38 KiB | 812.00 KiB/s, done.
+Total 12 (delta 0), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: 
+remote: Create a pull request for 'master' on GitHub by visiting:
+remote:      https://github.com/vasuyadav0216/Srinivasa_Yadav/pull/new/master
+remote: 
+To https://github.com/vasuyadav0216/Srinivasa_Yadav.git
+ * [new branch]      master -> master
+branch 'master' set up to track 'origin/master'.
+PS C:\Users\Administrator\Desktop\SRINIVASA_YADAV>
