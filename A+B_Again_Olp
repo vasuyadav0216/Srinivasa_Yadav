@@ -1,0 +1,15 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+    int a;
+    cin >> a;
+    for (int i = 0; i < a; i++) {
+        int e;
+        cin >> e;
+        int c = 0, v = 0;
+        c = c + e%10;
+        v = v + e/10;
+        cout << c+v << endl;
+    }
+}

@@ -1,0 +1,15 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+    int a ,b , count = 0;
+    cin >> a >> b;
+    
+    for (int i = 1; i <= 10; i++) {
+        count = a * i;
+        if(count%10 == 0 || count%10 == b){
+            cout << i << endl;
+            break;
+        }
+    }       
+}
