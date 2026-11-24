@@ -1,0 +1,29 @@
+#include <bits/stdc++.h>
+using namespace std;
+#define ll long long int
+
+int main() {
+    ll t;
+    cin >> t;
+    while(t--) {
+        ll n; cin >> n;
+        vector<ll> v(n);
+        for (ll i = 0; i < n; i++) {
+            cin >> v[i];
+        }
+        ll maxi = INT_MIN, mini = INT_MAX;
+        for (ll i = 0; i < n; i++) {
+            maxi = max(maxi , v[i]);
+            mini = min(mini , v[i]);
+        }
+        ll ans = INT_MIN;
+
+        ans = max(ans , maxi - v[0]);
+        ans = max(ans , v[n-1] - mini);
+
+        for (ll i = 0; i < n-1; i++) {
+            ans = max(ans , v[i] - v[i+1]);
+        }
+        cout << ans << endl;
+    }
+} 
