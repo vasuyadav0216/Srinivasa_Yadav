@@ -1,0 +1,49 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+
+    int t;
+    cin >> t;
+    for (int i = 0; i < t; i++) {
+        int a , b , c;
+        cin >> a >> b >> c;
+
+        vector<int> v(a) , y(a) , s(a);
+        for (int j = 0; j < a; j++) {
+            cin >> v[j];
+        }
+
+        int liked_cube = v[b-1];
+
+        sort(v.begin(), v.end(),greater<int>());
+        
+        for (int i = 0; i < c; i++)
+        {
+            y[i] = v[i];
+        }
+        for (int i = c; i < a; i++) {
+            s[i] = v[i];
+        }
+
+
+        int count = 0 , dub = 0;
+        for (int i = 0; i < c; i++) {
+            if(liked_cube == y[i])
+            count++;
+        }
+         for(int i = c; i < a; i++) {
+            if(liked_cube == s[i])
+            dub++;
+        }
+
+        if( count > 0 && dub > 0)  
+            cout << "MAYBE" << endl;
+            
+        else if(count == 1 || dub == 0) 
+            cout << "YES" << endl;
+
+        else if(count == 0)
+            cout << "NO" << endl;
+    }
+}

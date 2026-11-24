@@ -1,0 +1,27 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+long long int sum(long long int n){
+    return n*(n+1)/2;
+}
+
+int main() 
+{
+    int t;
+    cin >> t;
+    while(t--) {
+        long long int n , k , x;  cin >> n >> k >> x;
+
+        long long int mini_sum = sum(k);
+        long long int middle_sum = sum(n);
+        long long int total_sum = sum(n-k);
+        long long int maxi_sum = middle_sum - total_sum;
+
+        if(mini_sum <= x && x <= maxi_sum) {
+            cout << "YES" << endl;
+        }
+        else {
+            cout << "NO" << endl;
+        }
+    }
+}

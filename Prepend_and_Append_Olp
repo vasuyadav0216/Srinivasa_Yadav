@@ -1,0 +1,21 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+  while (n--)
+  {
+    int a;
+    cin >> a;
+    string s;
+    cin >> s;
+    int x = 0 , y = a-1;
+    while (x<y && s[x] != s[y])
+    {
+        x++;
+        y--;
+    }
+    cout << y-x+1 << endl;
+  }
+}

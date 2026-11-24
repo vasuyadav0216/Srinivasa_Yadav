@@ -1,0 +1,24 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() 
+{
+    int t;
+    cin >> t;
+   while(t--) {
+        int n , m;
+        cin >> n >> m;
+        string x;   cin >> x;
+        string s;   cin >> s;
+        int count = 0;
+        while(x.find(s) == string :: npos){
+            count++;
+            x = x + x;
+            if(count > 6){
+                count = -1;
+                break;
+            }
+        }
+        cout << count << endl;
+    }
+}

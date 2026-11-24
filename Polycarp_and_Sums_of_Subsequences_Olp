@@ -1,0 +1,60 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+int main()
+{
+	int t;
+	cin >> t;
+	for (int i = 0; i < t; i++)
+	{
+		vector<int> v(7);
+		int a = 7;
+		for (int i = 0; i < a; i++) {
+			cin >> v[i];
+		}
+		int x = v[0];
+		int y = v[1];
+
+		cout << x << " " << y << " " << v[a-1] - x-y << endl;
+	}
+}
+// #include <bits/stdc++.h>
+// using namespace std;
+
+// int main() {
+//     int t;
+//     cin >> t;
+//     for (int i = 0; i < t; i++) {
+//         vector<int> v(7);
+//         int a = v.size();
+//         for (int i = 0; i < a; i++) {
+//             cin >> v[i];
+//         }
+//         int faa = 0;
+            
+//         faa = v[a-1];
+//         int c1 = 0;
+//         int c2 = 0;
+//         int c3 = 0;
+//         for (int i = 0; i < a; i++) 
+//         {
+//             for (int j = i+1; j < a; j++) 
+//             {
+//                 for (int k = j+1; k < a; k++)
+//                 {
+//                     if( v[i] + v[j] + v[k]  == faa)
+//                     {
+//                         c1 = v[i];
+                        
+//                         c2 = v[j];
+                        
+//                         c3 = v[k];
+                        
+//                         break;
+//                     }
+//                 }
+//             }
+//         }        
+//         cout << c1 << " " << c2 << " " << c3 << endl;
+//     }
+// }

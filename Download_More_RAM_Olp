@@ -1,0 +1,32 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+
+    int t;
+    cin >> t;
+    for(int i = 0; i < t; i++) {
+        int n , k;
+        cin >> n >> k;
+        vector<int> a(n);
+        vector<int> b(n);
+        for(int i = 0; i < n; i++) {
+            cin >> a[i];
+        }
+        for (int i = 0; i < n; i++) {
+            cin >> b[i];
+        }
+        int count = 0;
+
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if(a[j] <= k && a[j] != 0) {
+                    k += b[j];
+                    a[j] = 0;
+                    continue;
+                }
+            }
+        }
+        cout << k << endl;
+    }
+}

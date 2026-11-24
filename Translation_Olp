@@ -1,0 +1,24 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+
+   string s1,s2;
+   cin >> s1 >> s2;
+   int v = s1.size();
+   int count = 0;
+   for (int i = 0; i < v; i++) 
+   {
+      if (s1[i] == s2[v-(i+1)])
+      count++;
+   }
+
+   // For example, a Berlandish word code written reversely, print YES.
+   if(count==s1.size() && count==s2.size())
+      cout<<"YES";
+
+   // corresponds to a Birlandish word edoc otherwise print NO.
+   else
+      cout<<"NO";
+
+}

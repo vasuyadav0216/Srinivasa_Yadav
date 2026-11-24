@@ -1,0 +1,26 @@
+PS C:\Users\Administrator\Desktop\SRINIVASA_YADAV> git --version
+
+PS C:\Users\Administrator\Desktop\SRINIVASA_YADAV> git init .
+
+PS C:\Users\Administrator\Desktop\SRINIVASA_YADAV> git status
+
+PS C:\Users\Administrator\Desktop\SRINIVASA_YADAV> git add .
+
+PS C:\Users\Administrator\Desktop\SRINIVASA_YADAV> git status
+
+PS C:\Users\Administrator\Desktop\SRINIVASA_YADAV> git commit -m "codeforces"
+
+PS C:\Users\Administrator\Desktop\SRINIVASA_YADAV> git remote add origin https://github.com/vasuyadav0216/Srinivasa_Yadav.git
+
+PS C:\Users\Administrator\Desktop\SRINIVASA_YADAV> git remote -v 
+
+PS C:\Users\Administrator\Desktop\SRINIVASA_YADAV> git push -u origin master
+
+PS C:\Users\Administrator\Desktop\SRINIVASA_YADAV>  git remote set-url origin https://github.com/vasuyadav0216/Srinivasa_Yadav.git 
+
+PS C:\Users\Administrator\Desktop\SRINIVASA_YADAV> git remote -v                                                                  
+
+origin  https://github.com/vasuyadav0216/Srinivasa_Yadav.git (fetch)
+origin  https://github.com/vasuyadav0216/Srinivasa_Yadav.git (push)
+
+PS C:\Users\Administrator\Desktop\SRINIVASA_YADAV> git push -u origin master                                                      

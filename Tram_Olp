@@ -1,0 +1,29 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+    int rounds;
+    cin >> rounds;
+    int people = 0;
+    int in_bus = 0;
+
+        // input
+
+        // 4
+        // 0 3
+        // 2 5
+        // 4 2
+        // 4 0
+
+    for (int i = 0; i < rounds; i++) {
+        int down,up;
+        cin >> down >> up;
+        people = people - down + up;
+        if (people >  in_bus)
+             in_bus = people;
+    }
+    cout <<  in_bus;
+
+
+
+}

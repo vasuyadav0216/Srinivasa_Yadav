@@ -1,0 +1,34 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+
+void count(string s, vector<int> &v){
+    for (int i = 0; i < s.size(); i++) {
+        v[s[i]-'A']++;
+    }
+
+}
+
+int main() {
+
+    vector<int> cnt1(26, 0);
+    vector<int> cnt2(26, 0);
+    vector<int> cnt3(26, 0);
+ 
+    string s1, s2, s3;
+    cin >> s1 >> s2 >> s3;
+
+    count(s1, cnt1);
+    count(s2, cnt2);
+    count(s3, cnt3);
+
+    int good = 1;
+    for (int i=0; i<=25; i++) {
+        if(cnt1[i] + cnt2[i] != cnt3[i])
+            good = 0;
+    }
+
+    if(good) cout << "YES";
+    else     cout << "NO";
+   
+}

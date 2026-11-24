@@ -1,0 +1,32 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    for (int i = 0; i < n; i++) {
+        int a; 
+        cin >> a;
+        set<int> s;
+        for (int j = 0; j < a; j++) {
+            int h;
+            cin >> h;
+            s.insert(h);
+        }
+        
+        bool ans = true ;
+        int next = *s.begin();
+        for (auto &c : s)
+        {
+            if(c != next)
+                ans = false;
+            next = c+1;
+        }
+
+        if(ans == true) 
+            cout << "YES" << endl ;
+
+        else  
+            cout << "NO" << endl;
+    }
+}
