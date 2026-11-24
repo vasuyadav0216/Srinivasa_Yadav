@@ -1,0 +1,429 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Sun &amp; Moon Breathing — Final Chapter</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>html,body{margin:0;height:100%;background:#0b0d14;overflow:hidden}canvas{display:block}</style></head><body><canvas id="c"></canvas>
+<script>
+const C=document.getElementById('c'),X=C.getContext('2d');let W,H;
+const rs=()=>{W=C.width=innerWidth;H=C.height=innerHeight};rs();addEventListener('resize',rs);
+const cl=(x,a=0,b=1)=>Math.min(b,Math.max(a,x)),L=(a,b,t)=>a+(b-a)*t,ez=t=>t*t*(3-2*t),rn=Math.random;
+const EL={sun:{c:'#ff9d1f',k:'#fff1a8',n:'SUN'},moon:{c:'#8f6bff',k:'#e9e2ff',n:'MOON'}};
+let el='sun',tc=0,hs=0,shake=0,T=0,over=false,chain=0,chainT=0,ult=null,msgT=0,msgS='',msgC='#fff',lb=0,finalBossSpawned=false,finalBossDefeated=false,gameId=0;
+
+// ---------- Floating Stages / Platforms ----------
+const PLATFORMS=[
+  {x:-300, y:-140, w:260, h:18},
+  {x:300,  y:-140, w:260, h:18},
+  {x:0,    y:-270, w:320, h:18},
+  {x:-450, y:-400, w:220, h:18},
+  {x:450,  y:-400, w:220, h:18}
+];
+
+// ---------- flipbook slash sheets ----------
+function sheet(k){const c=document.createElement('canvas');c.width=1024;c.height=512;const x=c.getContext('2d'),E_=EL[k];
+for(let i=0;i<8;i++){const p=i/7;x.save();x.translate((i%4)*256+128,(i>>2)*256+170);x.lineCap='round';
+const a0=Math.PI*1.1,sw=Math.PI*.8*Math.min(1,p*1.8+.15);x.globalAlpha=1-p*.75;
+if(k==='moon'){x.fillStyle=E_.c;x.beginPath();x.arc(0,0,105,a0,a0+sw);x.arc(0,26*(1-p*.5),92,a0+sw,a0,true);x.closePath();x.fill();
+x.strokeStyle=E_.k;x.lineWidth=4;x.beginPath();x.arc(0,0,108,a0,a0+sw);x.stroke()}
+else{x.strokeStyle=E_.c;x.lineWidth=34*(1-p*.5);x.beginPath();x.arc(0,0,92,a0,a0+sw);x.stroke();
+x.strokeStyle=E_.k;x.lineWidth=10;x.beginPath();x.arc(0,0,92,a0,a0+sw);x.stroke();
+x.strokeStyle=E_.c;x.lineWidth=5;for(let j=0;j<22;j++){const a=a0+sw*rn(),l=16+rn()*40*(1-p*.4);x.beginPath();x.moveTo(Math.cos(a)*108,Math.sin(a)*108);x.lineTo(Math.cos(a)*(108+l),Math.sin(a)*(108+l)-l*.5);x.stroke()}}
+x.restore()}return c}
+const SHT={sun:sheet('sun'),moon:sheet('moon')},FLP=[],PT=[],PR=[],DW=[],SWV=[],G=[];
+function flip(x,y,sc){FLP.push({x,y,sc,rot:(rn()-.5)*1.4,t:0,el})}
+function emit(x,y,n,s,c){for(let i=0;i<n;i++){const a=rn()*6.28,v=rn()*s;PT.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-s*.25,l:.5+rn()*.5,c})}if(PT.length>900)PT.splice(0,PT.length-900)}
+
+// ---------- fighters ----------
+const mkF=(col,hair,ai,maxHp=100)=>({x:0,y:0,vy:0,kx:0,face:1,hp:maxHp,maxHp,mp:0,st:'idle',t:0,cd:0,sd:0,fl:0,atk:null,buf:false,arm:.5,col,hair,ai,mode:'c',th:1,left:0,dv:{x:1,y:0},tr:[],burn:0,dist:400,canDoubleJump:true,revived:false,waveCd:0,isDead:false,deadTimer:0,isRage:false});
+const P=mkF('#1f6b4a','#2a1a1a',0,100);
+const Tanjiro=mkF('#ff8800','#3a1010',2,150);
+const E=mkF('#4a1f3a','#8a2030',1,600);
+const Boss2=mkF('#220033','#ff0055',3,800); // The Final Ultimate Demon Boss entering later!
+
+const LA=[{d:.34,dm:4,r:110,a:[-1.6,.6]},{d:.32,dm:4,r:110,a:[1,-1.2]},{d:.36,dm:5,r:120,a:[-.6,.8]},{d:.5,dm:8,r:140,a:[-2.4,1.4]}],HA={d:.85,dm:12,r:150,a:[-2.6,1.5]};
+const gain=(f,x)=>f.mp=Math.min(100,f.mp+x),msg=(t,c='#fff')=>{msgS=t;msgC=c;msgT=1.3};
+const sw=f=>{const sx=f.x+f.face*8,sy=f.y-70,dx=Math.cos(f.arm)*f.face,dy=Math.sin(f.arm),hx=sx+dx*22,hy=sy+dy*22;return{sx,sy,hx,hy,tx:hx+dx*95,ty:hy+dy*95,bx:hx+dx*25,by:hy+dy*25}};
+const tcol=f=>f.isDead?'#ff0055':(f===P?EL[el].c:(f===Tanjiro?'#ff9d1f':'#c04bff'));
+function atk(f,t,i){f.st='atk';f.t=0;f.atk={type:t,i,hit:false};f.buf=false}
+function dash(f,c){let dx=c.x,dy=c.y;const m=Math.hypot(dx,dy);if(m<.1){dx=f.face;dy=0}else{dx/=m;dy/=m}
+f.dv={x:dx,y:dy};f.st='dash';f.t=0;f.cd=.55;f.atk=null;f.vy=0;emit(f.x,f.y-50,18,260,tcol(f))}
+function teleport(f,o){
+  emit(f.x,f.y-50,30,400,tcol(f));
+  f.x = o.x - o.face * 90;
+  f.y = o.y;
+  f.face = o.face;
+  emit(f.x,f.y-50,30,400,tcol(f));
+  msg('BLINK TELEPORT!', tcol(f));
+  shake = 10;
+}
+function superJump(f){
+  f.vy = -1450;
+  f.canDoubleJump = true;
+  emit(f.x, f.y - 20, 45, 600, tcol(f));
+  msg('SUPER HIGH JUMP!', tcol(f));
+  shake = 8;
+}
+function unleashDemonWave(f){
+  f.waveCd = 8;
+  msg('BLOOD DEMON ART: ABYSS WAVE!', '#b000ff');
+  shake = 22;
+  emit(f.x, f.y - 60, 60, 700, '#8000ff');
+  DW.push({x: f.x, y: f.y - 60, vx: f.face * 550, r: 25, maxR: 350, o: f});
+}
+function spawnFinalBoss(){
+  if(finalBossSpawned) return;
+  finalBossSpawned = true;
+  Boss2.x = 400; Boss2.y = 0;
+  shake = 35;
+  msg('SUPREME UPPER RANK DEMON AWAKENS!', '#ff0055');
+  emit(Boss2.x, Boss2.y - 50, 100, 900, '#ff0055');
+  
+  // Unleash Massive Radius Shockwave on entrance
+  const id = gameId;
+  setTimeout(() => {
+    if (id !== gameId || !finalBossSpawned) return;
+    msg('DEMONIC OBLITERATION SHOCKWAVE!', '#ff0000');
+    shake = 45;
+    SWV.push({x: Boss2.x, y: Boss2.y - 50, r: 10, maxR: 1200});
+  }, 1000);
+}
+
+function tanjiroNewBreathing(){
+  Tanjiro.isRage = true;
+  shake = 40;
+  msg('SUN BREATHING: THIRTEENTH FORM — TRUE SUNLIGHT FLASH!', '#ffaa00');
+  emit(Tanjiro.x, Tanjiro.y - 60, 120, 1000, '#ffcc00');
+  
+  // Strike Final Boss with Supreme Damage
+  const id = gameId;
+  setTimeout(() => {
+    if (id !== gameId) return;
+    Boss2.hp = 0;
+    finalBossDefeated = true;
+    shake = 50;
+    emit(Boss2.x, Boss2.y - 60, 150, 1200, '#ff0055');
+    flip(Boss2.x, Boss2.y - 60, 800);
+    msg('SUPREME DEMON VANQUISHED BY TANJIRO!', '#ffd24a');
+    over = true;
+  }, 800);
+}
+
+function hurt(d,a,dm,type,fin,hitY){
+if(d.st==='ult'||d.st==='frozen')return;
+if(d.st==='dash'&&d.t<.12){if(d===P)msg('DODGE','#8ff');return}
+
+const headY=d.y-100;
+const isHeadshot=Math.abs(hitY-headY)<22;
+let finalDm = isHeadshot ? dm * 1.5 : dm;
+if(a.isDead) finalDm *= 2.0;
+
+let isCoOpHeadshot = false;
+if ((d === E || d === Boss2) && (P.st === 'atk' && Tanjiro.st === 'atk')) {
+  isCoOpHeadshot = true;
+  finalDm *= 2.2;
+  msg('DUAL SUN-MOON HEADSHOT COMBO! 2.2x', '#ffd24a');
+  shake = 26;
+  emit(d.x, d.y - 90, 60, 700, '#ff9d1f');
+}
+
+const mx=d.x,my=d.y-55,hv=type==='H'||fin,col=tcol(a);
+
+if(d === E && d.hp - finalDm <= 0 && !d.revived) {
+  d.hp = d.maxHp * 0.5;
+  d.revived = true;
+  d.st = 'stun';
+  d.t = 0;
+  d.sd = 2.0;
+  shake = 30;
+  emit(d.x, d.y - 60, 80, 900, '#b000ff');
+  flip(d.x, d.y - 60, 600);
+  msg('DEMON REBIRTH: PHASE 2 UNLEASHED!', '#ff0055');
+  return;
+}
+
+// Trigger Final Boss Spawn when first boss dies
+if(d === E && d.hp - finalDm <= 0 && d.revived && !finalBossSpawned) {
+  d.hp = 0;
+  spawnFinalBoss();
+  return;
+}
+
+if(d === Boss2) {
+  d.hp = Math.max(0, d.hp - finalDm);
+  if(d.hp <= 0) {
+    finalBossDefeated = true;
+    over = true;
+    msg('VICTORY — PRESS ENTER', '#ffd24a');
+  }
+  return;
+}
+
+d.hp = Math.max(0, d.hp - finalDm);
+
+if(d.hp <= 0 && !d.isDead && d !== E && d !== Boss2) {
+  d.isDead = true;
+  if(d === Tanjiro) {
+    // Tanjiro enters Rage Form and triggers his new breathing!
+    tanjiroNewBreathing();
+  } else {
+    d.deadTimer = 6.0;
+    shake = 25;
+    emit(d.x, d.y - 60, 60, 800, '#ff0055');
+    msg('PLAYER FINAL STAND — RAGE MODE!', '#ff0055');
+  }
+  return;
+}
+
+if(d.st==='parry'){if(type!=='P'){a.st='stun';a.t=0;a.sd=1.1;a.atk=null;a.kx=-a.face*250}gain(d,25);hs=.15;shake=14;emit(mx,my,30,420,'#fff');flip(mx,my,260);if(d===P)msg('PARRY!','#ffe14a');return}
+d.fl=1;gain(a,finalDm*1.2);gain(d,finalDm*1.5);
+hs=(hv||isHeadshot||isCoOpHeadshot)? .22 : .05;shake=hv||isHeadshot||isCoOpHeadshot?22:6;
+emit(mx,my,isCoOpHeadshot?50:(isHeadshot?45:(hv?35:16)),600,isCoOpHeadshot?'#ffd24a':col);
+flip(mx,my,isCoOpHeadshot?400:300);
+if(a===P||a===Tanjiro){chain++;chainT=1.8;d.burn=3}}
+
+// ---------- AI Logic ----------
+function allyAi(f,o,dt){
+  const c={x:0,y:0,L:0,H:0,Pa:0,Pk:0,D:0,j:0};
+  f.th-=dt;
+  const dx = o.x - f.x;
+  f.dist = Math.abs(dx);
+  if(f.st==='idle'){
+    if(f.dist > 90) c.x = Math.sign(dx);
+    else if(f.dist <= 90 && rn() < 0.1) { if(rn()<0.4) c.L=1; else c.H=1; }
+    if(o.y < f.y - 40 && f.y >= 0 && rn() < 0.08) c.j = 1;
+  }
+  return c;
+}
+
+function ai(f,o,dt){
+  const c={x:0,y:0,L:0,H:0,Pa:0,Pk:0,D:0,j:0};
+  f.th-=dt;f.waveCd -= dt;
+  const dx = o.x - f.x;
+  f.dist = Math.abs(dx);
+  if(f.st==='idle'){
+    if(f.waveCd <= 0 && rn() < 0.25) unleashDemonWave(f);
+    else if(f.dist > 110) c.x = Math.sign(dx);
+    else if(f.dist <= 110 && rn() < 0.04) { if(rn()<0.5) c.L=1; else c.H=1; }
+    if(o.y < f.y - 40 && f.y >= 0 && rn() < 0.05) c.j = 1;
+  }
+  return c;
+}
+
+// ---------- fighter update ----------
+function upd(f,o,dt,c){
+f.t+=dt;f.cd-=dt;const dx=o.x-f.x;f.dist=Math.abs(dx);if(f.dist>2)f.face=dx>0?1:-1;
+if(f.isDead && !f.isRage){
+  f.deadTimer -= dt;
+  if(f.deadTimer <= 0) f.hp = 0;
+}
+let on=false,pose=.5;f.x+=f.kx*dt;f.kx*=Math.exp(-6*dt);
+let speedMult = (f.isDead || f.isRage) ? 1.5 : 1.0;
+switch(f.st){
+case'idle':{
+  f.x+=c.x*(f.ai===1?220:260)*speedMult*dt;
+  if(c.j){
+    if(f.y>=0){ f.vy=-820; f.canDoubleJump=true; }
+    else if(f.canDoubleJump){ f.vy=-750; f.canDoubleJump=false; emit(f.x, f.y - 40, 20, 350, tcol(f)); }
+  }
+  if(c.D&&f.cd<=0)dash(f,c);else if(c.H)atk(f,'H',0);else if(c.L)atk(f,'L',0);
+  pose=.5+Math.sin(T*3)*.08;break;
+}
+case'atk':{const a=f.atk,A=a.type==='H'?HA:LA[a.i],d=(A.d/(f.isDead||f.isRage?1.4:1))*(f.ai?1.3:1),p=f.t/d,big=a.type==='H'||a.i===3,reach=A.r*(f===P&&el==='moon'?1.3:1),[a0,a1]=A.a;let r;
+if(p<.35)r=L(.5,a0,p/.35);else if(p<.6)r=L(a0,a1,ez((p-.35)/.25));else r=L(a1,.5,cl((p-.6)/.4));
+f.arm=r;pose=null;on=p>.3&&p<.8;if(p<.5&&f.dist>70)f.x+=f.face*(big?350:480)*speedMult*dt;
+if(!a.hit&&p>=.5){a.hit=true;const strike=sw(f);if(f.dist<=reach&&Math.abs(o.y-f.y)<110)hurt(o,f,A.dm*(f===P&&el==='sun'?1.15:1),a.type,a.i===3,strike.ty);}
+if(p>=1){f.st='idle';f.t=0;f.cd=.12}break}
+case'dash':{const s=(f===P&&tc>0?1400:1000)*speedMult;if(!(f.dist<60&&f.dv.x*f.face>.3))f.x+=f.dv.x*s*dt;f.y=Math.min(0,f.y+f.dv.y*s*dt);on=true;pose=0;
+emit(f.x,f.y-50,2,60,tcol(f));if(f.t>.2){f.st='idle';f.t=0;f.vy=0}break}
+case'stun':pose=1.3;if(f.t>f.sd){f.st='idle';f.t=0}break}
+if(pose!==null)f.arm=L(f.arm,pose,cl(dt*14));
+
+if(f.st!=='dash'){
+  f.vy+=2300*dt;f.y+=f.vy*dt;
+  PLATFORMS.forEach(p=>{
+    const pLeft=p.x-p.w/2, pRight=p.x+p.w/2;
+    if(f.x>=pLeft && f.x<=pRight && f.vy>0){
+      const prevY=f.y-f.vy*dt;
+      if(prevY<=p.y && f.y>=p.y){ f.y=p.y; f.vy=0; f.canDoubleJump=true; }
+    }
+  });
+  if(f.y>=0){f.y=0;f.vy=0;f.canDoubleJump=true;}
+}
+f.x=cl(f.x,-720,720);
+const s=sw(f);if(on){f.tr.unshift(s);if(f.tr.length>18)f.tr.pop()}else f.tr.pop();
+f.fl=Math.max(0,f.fl-dt*6)}
+
+// ---------- Ultimate Art ----------
+const UT=[.7,.95,1.2,1.45,1.7,2.2];
+function ultStart(){P.mp=0;P.st='ult';P.atk=null;ult={t:0,n:0};E.st='frozen';E.atk=null;hs=.4;shake=14;
+msg(el==='sun'?'SUN BREATHING — HINOKAMI KAGURA':'MOON BREATHING — CRESCENT DANCE',EL[el].k)}
+function ultUpd(dt){ult.t+=dt;const targetE = finalBossSpawned ? Boss2 : E;const em={x:targetE.x,y:targetE.y-55};
+if(ult.t>.6){const s=sw(P);P.tr.unshift(s);if(P.tr.length>18)P.tr.pop();emit(s.tx,s.ty,3,120,EL[el].c)}else P.tr.pop();
+while(ult.n<6&&ult.t>=UT[ult.n]){const n=ult.n++,fin=n===5,side=n%2?1:-1;
+P.x=targetE.x+side*(fin?130:100);P.y=Math.min(0,targetE.y)-(n%3===2?80:0);P.face=-side;P.arm=-.5+rn()*1.2;
+targetE.hp=Math.max(0,targetE.hp-(fin?15:4));targetE.fl=1;hs=fin?.4:.05;shake=fin?30:12;
+flip(em.x,em.y,fin?700:380);if(n%2)flip(em.x,em.y,260);emit(em.x,em.y,fin?90:25,fin?700:420,EL[el].c);emit(em.x,em.y,fin?40:10,fin?500:250,'#fff')}
+if(ult.t>2.9){P.st='idle';P.t=0;targetE.st='stun';targetE.t=0;targetE.sd=1.3;targetE.kx=P.face*900;ult=null}}
+function drawTr(f,col,core){const t=f.tr;if(t.length<2)return;X.globalCompositeOperation='lighter';
+for(let i=0;i<t.length-1;i++){const a=t[i],b=t[i+1],al=(1-i/t.length)*.85;X.globalAlpha=al;X.fillStyle=col;X.beginPath();X.moveTo(a.tx,a.ty);X.lineTo(b.tx,b.ty);X.lineTo(b.bx,b.by);X.lineTo(a.bx,a.by);X.closePath();X.fill();
+X.strokeStyle=core;X.lineWidth=3;X.beginPath();X.moveTo(a.tx,a.ty);X.lineTo(b.tx,b.ty);X.stroke()}X.globalAlpha=1;X.globalCompositeOperation='source-over'}
+const ST=Array.from({length:70},()=>[rn(),rn()*.55,rn()*2+1]);
+function bg(){const g=X.createLinearGradient(0,0,0,H);g.addColorStop(0,'#141230');g.addColorStop(1,el==='sun'?'#5a2f3a':'#2f2b58');X.fillStyle=g;X.fillRect(0,0,W,H);
+X.fillStyle='#fff8';ST.forEach(s=>X.fillRect(s[0]*W,s[1]*H,s[2],s[2]));
+const cx=W*.75-cam.x*.05,cy=H*.22,gr=X.createRadialGradient(cx,cy,10,cx,cy,170);gr.addColorStop(0,EL[el].c+'cc');gr.addColorStop(1,'#0000');X.fillStyle=gr;X.fillRect(cx-170,cy-170,340,340);
+X.fillStyle=EL[el].k;X.beginPath();X.arc(cx,cy,58,0,7);X.fill();if(el==='moon'){X.fillStyle='#2f2b58';X.beginPath();X.arc(cx+22,cy-8,50,0,7);X.fill()}}
+
+// ---------- input / camera / loop ----------
+const K={},pr={};
+addEventListener('keydown',e=>{
+  const fresh=!K[e.code];
+  if(fresh)pr[e.code]=1;
+  K[e.code]=1;
+  if(e.code==='Space')e.preventDefault();
+  if(fresh&&(e.code==='ShiftLeft'||e.code==='ShiftRight')){ teleport(P, finalBossSpawned ? Boss2 : E); }
+  if(fresh&&e.code==='KeyE'){ superJump(P); }
+  if(e.code==='Digit1'){ el='sun'; msg('SUN BREATHING EQUIPPED', EL.sun.c); }
+  if(e.code==='Digit2'){ el='moon'; msg('MOON BREATHING EQUIPPED', EL.moon.c); }
+});
+addEventListener('keyup',e=>K[e.code]=0);
+const pc=()=>({x:(K.KeyD?1:0)-(K.KeyA?1:0),y:(K.KeyS?1:0)-(K.KeyW?1:0),j:pr.KeyW,L:pr.KeyJ,H:pr.KeyK,Pa:pr.KeyF,Pk:K.KeyF,D:pr.Space});
+const cam={x:0,y:-60,z:1};
+function reset(){gameId++;[P,Tanjiro,E,Boss2].forEach(f=>{f.hp=f.maxHp;f.mp=0;f.st='idle';f.t=0;f.atk=null;f.kx=0;f.y=0;f.vy=0;f.fl=0;f.mode='c';f.th=1;f.left=0;f.burn=0;f.tr=[];f.canDoubleJump=true;f.revived=false;f.waveCd=0;f.isDead=false;f.deadTimer=0;f.isRage=false;});P.x=-250;Tanjiro.x=-120;E.x=250;Boss2.x=800;finalBossSpawned=false;finalBossDefeated=false;over=false;tc=0;ult=null;chain=0;PR.length=0;DW.length=0;SWV.length=0;msgT=0}
+reset();let last=performance.now(),gt=0;
+function loop(now){requestAnimationFrame(loop);const raw=Math.min(.05,(now-last)/1000);last=now;let dt=raw;T+=raw;
+if(over&&pr.Enter)reset();
+if(!over&&!ult&&P.st!=='stun'&&!P.isDead){if(pr.KeyQ&&tc<=0&&P.mp>=40){P.mp-=40;tc=6;msg('TOTAL CONCENTRATION',EL[el].k);emit(P.x,P.y-50,60,500,EL[el].c)}
+if(pr.KeyR&&P.mp>=100&&(P.st==='idle'||P.st==='atk'))ultStart()}
+if(hs>0){hs-=raw;dt=0}
+if(dt>0&&!over){if(tc>0){tc-=dt;gt-=dt;if(gt<=0){gt=.04;G.push({...P,a:.5,fl:0})}}
+const dP=dt*(tc>0?1.5:1),dE=dt*(tc>0?.65:1);
+const activeBoss = finalBossSpawned ? Boss2 : E;
+if(P.st==='ult')ultUpd(dt);else upd(P,activeBoss,dP,pc());
+upd(Tanjiro,activeBoss,dE,Tanjiro.isRage ? {x:Math.sign(activeBoss.x-Tanjiro.x), y:0, L:1, H:1} : allyAi(Tanjiro,activeBoss,dE));
+upd(activeBoss,P,dE,activeBoss.st==='frozen'?{x:0,y:0}:ai(activeBoss,P,dE));
+
+// Update Shockwaves
+for(let i=SWV.length-1; i>=0; i--){
+  const swv = SWV[i];
+  swv.r += 700 * dt;
+  if(swv.r < swv.maxR) {
+    // Check radius damage: kills everyone except Tanjiro in Rage Form
+    if(Math.abs(P.x - swv.x) < swv.r && !P.isDead) { P.hp = 0; P.isDead = true; msg('PLAYER HIT BY SHOCKWAVE!', '#ff0055'); }
+    if(Math.abs(E.x - swv.x) < swv.r && !E.isDead && !finalBossSpawned) { E.hp = 0; }
+  }
+  if(swv.r > swv.maxR) SWV.splice(i, 1);
+}
+
+for(let i=DW.length-1; i>=0; i--){
+  const w = DW[i];
+  w.r += 600 * dt;
+  if(Math.abs(w.r - w.maxR) < 30) {
+    if(Math.abs(P.x - w.x) < w.r) hurt(P, activeBoss, 15, 'H', false, P.y);
+    if(Math.abs(Tanjiro.x - w.x) < w.r && !Tanjiro.isRage) hurt(Tanjiro, activeBoss, 15, 'H', false, Tanjiro.y);
+  }
+  if(w.r > w.maxR) DW.splice(i, 1);
+}
+
+const sx=P.x-activeBoss.x;if(Math.abs(sx)<50&&P.st!=='ult'){const m=(50-Math.abs(sx))/2*(sx>=0?1:-1);P.x+=m;activeBoss.x-=m}
+for(let i=PR.length-1;i>=0;i--){const p=PR[i],e=activeBoss;p.x+=p.vx*dt;p.l-=dt;if(Math.abs(p.x-e.x)<40&&Math.abs(p.y-(e.y-50))<70){hurt(e,p.o,p.dm,'P',false,p.y);PR.splice(i,1)}else if(p.l<=0)PR.splice(i,1)}
+[P,Tanjiro,E,Boss2].forEach(f=>{if(f.burn>0){f.burn-=dt;f.hp=Math.max(0,f.hp-4*dt);if(rn()<.5)emit(f.x,f.y-60,1,120,'#ff8a1f')}});
+if((P.isDead && P.deadTimer<=0 && Tanjiro.hp<=0)||finalBossDefeated){over=true;ult=null;const w=finalBossDefeated;msg(w?'VICTORY — press Enter':'DEFEATED — press Enter',w?'#ffd24a':'#f66')}}
+chainT-=raw;if(chainT<=0)chain=0;msgT-=raw;
+FLP.forEach(f=>f.t+=raw);for(let i=FLP.length-1;i>=0;i--)if(FLP[i].t>.32)FLP.splice(i,1);
+PT.forEach(p=>{p.x+=p.vx*raw;p.y+=p.vy*raw;p.vy+=400*raw;p.l-=raw});for(let i=PT.length-1;i>=0;i--)if(PT[i].l<=0)PT.splice(i,1);
+G.forEach(g=>g.a-=raw*2);while(G.length&&G[0].a<=0)G.shift();
+
+let tx,ty,tz;const focusTarget = finalBossSpawned ? Boss2 : E;
+if(ult){const first=ult.t<.7;tx=first?P.x:focusTarget.x;ty=(first?P.y:focusTarget.y)-60;tz=first?2.2:1.8}
+else{const d=Math.abs(P.x-focusTarget.x),dy=Math.abs(P.y-focusTarget.y);tz=cl(Math.min(W/(d+520),H/(dy+420)),.5,1.3);tx=(P.x+focusTarget.x)/2;ty=(P.y+focusTarget.y)/2-70}
+const k=1-Math.exp(-(ult?12:6)*raw);cam.x=L(cam.x,tx,k);cam.y=L(cam.y,ty,k);cam.z=L(cam.z,tz,k);
+
+X.setTransform(1,0,0,1,0,0);bg();
+X.save();X.translate(W/2+(rn()-.5)*shake,H*.62+(rn()-.5)*shake);shake*=.88;X.scale(cam.z,cam.z);X.translate(-cam.x,-cam.y);
+
+// Draw Pillars / Architecture
+X.fillStyle='#2a1f3a';for(let i=-4;i<=4;i++){X.fillRect(i*400-22,-300,44,300);X.fillStyle='#ffd080';X.beginPath();X.arc(i*400,-312,14,0,7);X.fill();X.fillStyle='#2a1f3a'}
+X.fillStyle='#34305a';X.fillRect(-1600,0,3200,900);X.fillStyle='#4a4580';X.fillRect(-1600,0,3200,12);X.fillStyle='#05050a';X.fillRect(-1600,-3,3200,5);
+
+// Draw Platforms
+PLATFORMS.forEach(p=>{
+  X.fillStyle='#3d2c4f';
+  X.fillRect(p.x-p.w/2, p.y, p.w, p.h);
+  X.strokeStyle='#05050a';
+  X.lineWidth=4;
+  X.strokeRect(p.x-p.w/2, p.y, p.w, p.h);
+  X.fillStyle='#6b4fb0';
+  X.fillRect(p.x-p.w/2, p.y, p.w, 4);
+});
+
+G.forEach(g=>drawF(g,g.a*.6));
+if(finalBossSpawned) drawF(Boss2); else drawF(E);
+drawF(Tanjiro);drawF(P);
+drawTr(P,EL[el].c,EL[el].k);drawTr(Tanjiro,'#ff9d1f','#fff1a8');drawTr(E,'#c04bff','#f0d0ff');
+if(finalBossSpawned) drawTr(Boss2,'#ff0055','#ffaaff');
+
+// Draw Shockwaves
+SWV.forEach(swv=>{
+  X.save();X.globalAlpha=0.7;X.strokeStyle='#ff0055';X.lineWidth=8;X.beginPath();X.arc(swv.x,swv.y,swv.r,0,Math.PI*2);X.stroke();
+  X.fillStyle='#ff005533';X.fill();X.restore();
+});
+
+X.globalCompositeOperation='lighter';
+FLP.forEach(f=>{const fr=Math.min(7,Math.floor(f.t/.32*8)),s=f.sc/256;X.save();X.translate(f.x,f.y);X.rotate(f.rot);X.scale(s,s);X.drawImage(SHT[f.el],(fr%4)*256,(fr>>2)*256,256,256,-128,-170,256,256);X.restore()});
+PT.forEach(p=>{X.globalAlpha=cl(p.l*2);X.fillStyle=p.c;X.fillRect(p.x-3,p.y-3,6,6)});X.globalAlpha=1;X.globalCompositeOperation='source-over';X.restore();
+
+// ----- HUD & Controls UI -----
+X.setTransform(1,0,0,1,0,0);const bw=Math.min(420,W*.4);
+const bar=(x,y,w,h,f,c,r)=>{X.fillStyle='#0009';X.fillRect(x,y,w,h);X.fillStyle=c;X.fillRect(r?x+w*(1-f):x,y,w*f,h);X.strokeStyle='#fff';X.lineWidth=2;X.strokeRect(x,y,w,h)};
+bar(20,16,bw*.45,16,P.isDead?1:P.hp/P.maxHp,P.isDead?'#ff0055':'#4ade80');
+bar(20+bw*.5,16,bw*.45,16,Tanjiro.isRage?1:Tanjiro.hp/Tanjiro.maxHp,Tanjiro.isRage?'#ffaa00':'#fbbf24');
+const currentBossHp = finalBossSpawned ? Boss2.hp/Boss2.maxHp : E.hp/E.maxHp;
+bar(W-20-bw,16,bw,16,currentBossHp,finalBossSpawned?'#ff0055':'#f87171',1);
+bar(20,40,bw*.6,11,P.mp/100,P.mp>=100&&(T*6|0)%2?'#fff':EL[el].c);
+
+X.font='700 11px system-ui';X.fillStyle='#fff';X.fillText(Tanjiro.isRage ? 'TANJIRO RAGE FORM ACTIVE — TRUE SUNLIGHT!' : 'PLAYER & TANJIRO HP',20,66);
+X.font='800 14px system-ui';['sun','moon'].forEach((k2,i)=>{X.fillStyle=el===k2?EL[k2].c:'#667';X.fillText((i+1)+' '+EL[k2].n+' BREATHING',20+i*180,90)});
+if(msgT>0){X.font='italic 900 '+Math.min(34,W/22)+'px system-ui';X.textAlign='center';X.globalAlpha=cl(msgT*3);X.fillStyle='#000';X.fillText(msgS,W/2+3,H*.3+3);X.fillStyle=msgC;X.fillText(msgS,W/2,H*.3);X.globalAlpha=1;X.textAlign='left'}
+lb=L(lb,ult?H*.12:0,.15);X.fillStyle='#000';X.fillRect(0,0,W,lb);X.fillRect(0,H-lb,W,lb);
+X.font='600 12px system-ui';X.fillStyle='#fffc';X.textAlign='center';X.fillText('A/D move · W jump · E Super Jump · Space dash · J light · K heavy · F parry · Q Concentration · R Ultimate · 1 Sun · 2 Moon',W/2,H-10);X.textAlign='left';
+
+for(const q in pr)delete pr[q]}
+requestAnimationFrame(loop);
+
+// ===== Anime-style character renderer =====
+const INK='#05050a';
+function poly(pts,col,sh=.28,pat){X.beginPath();pts.forEach((p,i)=>i?X.lineTo(p[0],p[1]):X.moveTo(p[0],p[1]));X.closePath();X.fillStyle=col;X.fill();
+let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;pts.forEach(p=>{x0=Math.min(x0,p[0]);x1=Math.max(x1,p[0]);y0=Math.min(y0,p[1]);y1=Math.max(y1,p[1])});
+X.save();X.clip();if(sh){X.fillStyle='rgba(0,0,0,'+sh+')';X.fillRect(x0,y0,(x1-x0)*.42,y1-y0)}X.restore();X.stroke()}
+function limb(a,b,c,d,w,col){X.lineCap='round';X.strokeStyle=INK;X.lineWidth=w+6;X.beginPath();X.moveTo(a,b);X.lineTo(c,d);X.stroke();X.strokeStyle=col;X.lineWidth=w;X.stroke();X.strokeStyle=INK;X.lineWidth=4}
+function drawF(f,al=1){
+const dm=f.ai===1||f===Boss2, isTanjiro=f===Tanjiro, e=EL[el],st=f.st,fl=f.fl>.3,F=c=>fl?'#fff':c,atkk=st==='atk',dsh=st==='dash',air=f.y<-5;
+const c1=f.isRage?'#ffaa00':(f.isDead?'#ff0055':(dm?(f.revived?'#4a1d75':'#2b1b3d'):isTanjiro?'#b43b00':el==='sun'?'#d9481c':'#5b49c9'));
+const c2=dm?'#17102a':isTanjiro?'#4a1400':'#3a1a12';
+const sk=dm?'#b8c4e6':'#ffdcc2',hairC=f.isRage?'#ffcc00':(dm?'#e6e6f5':isTanjiro?'#2a1010':el==='sun'?'#4a1616':'#251b44'),eyeC=f.isRage?'#ff0000':(dm?(f.revived?'#00ffcc':'#e11d3f'):(isTanjiro?'#ff8800':e.c)),pc=dm?'#3a2a4a':'#16162a';
+X.save();X.globalAlpha=al*.35*cl(1+f.y/300);X.fillStyle='#000';X.beginPath();X.ellipse(f.x,3,34,7,0,0,7);X.fill();X.restore();
+X.save();X.globalAlpha=al;X.translate(f.x,f.y);X.scale(f.face,1);X.rotate(st==='stun'?-.22:dsh?.22:atkk?.08:0);
+X.lineJoin='round';X.lineCap='round';X.lineWidth=4;X.strokeStyle=INK;
+if((f===P||f===Tanjiro)&&(f.isDead||f.isRage)){X.save();X.globalCompositeOperation='lighter';const g=X.createRadialGradient(0,-60,5,0,-60,95);g.addColorStop(0,f.isRage?'#ffaa00aa':'#ff0055aa');g.addColorStop(1,'#0000');X.fillStyle=g;X.fillRect(-110,-170,220,200);X.restore()}
+const sp=atkk?26:dsh?30:air?7:11,sw_=dsh?-38:Math.sin(T*4+(dm?2:0))*4+(atkk?-12:0);
+if(!air)X.translate(0,Math.sin(T*3+(dm?1:0))*1.5);
+limb(-4,-88,-12,-58,12,F(c1));
+const leg=s=>{poly([[-7+s*.2,-44],[7+s*.2,-44],[s+7,-8],[s-7,-8]],F(pc),.3);poly([[s-9,-8],[s+10,-8],[s+18,0],[s-9,0]],F('#3a2a22'),.2)};
+leg(-sp);leg(sp);
+poly([[-14,-44],[14,-44],[17,-92],[-17,-92]],F(dm?'#4a2a5a':'#171a3a'),.3);
+poly([[-15,-52],[15,-52],[15,-43],[-15,-43]],F(dm?'#a31d3a':'#efefef'),.2);
+poly([[-5,-96],[6,-96],[6,-104],[-5,-104]],F(sk),.3);
+const hsVal=Math.sin(T*5)*2.5;
+poly([[-17,-100],[-24+hsVal,-110],[-19+hsVal,-122],[-22+hsVal*1.3,-136],[-9,-130],[-3,-146],[4,-132],[12,-142],[15,-128],[19,-114],[14,-100]],F(hairC),.3);
+X.beginPath();X.ellipse(2,-110,15,17,0,0,7);X.fillStyle=F(sk);X.fill();X.stroke();
+[[6,5,6.5],[14,3.2,5.6]].forEach(([x,rx,ry])=>{X.lineWidth=2;X.beginPath();X.ellipse(x,-110,rx,ry,0,0,7);X.fillStyle='#fff';X.fill();X.stroke();
+X.beginPath();X.ellipse(x+1,-109,rx*.75,ry*.85,0,0,7);X.fillStyle=eyeC;X.fill();
+X.fillStyle='#0a0a14';X.beginPath();X.ellipse(x+1.2,-109,rx*.38,ry*.55,0,0,7);X.fill()});
+X.restore();
+const s=sw(f),ux=(s.tx-s.hx)/95,uy=(s.ty-s.hy)/95;
+X.save();X.globalAlpha=al;X.lineCap='round';X.lineJoin='round';
+limb(s.sx,s.sy,s.hx,s.hy,13,F(c1));
+X.strokeStyle=INK;X.lineWidth=12;X.beginPath();X.moveTo(s.bx,s.by);X.lineTo(s.tx,s.ty);X.stroke();
+X.strokeStyle=f.isRage?'#ffcc00':(dm?'#ff0055':(isTanjiro?'#ff9d1f':e.c));X.lineWidth=7;X.stroke();X.strokeStyle='#fff';X.lineWidth=2.5;X.stroke();
+X.beginPath();X.arc(s.bx,s.by,8,0,7);X.fillStyle='#c9a227';X.fill();X.stroke();
+X.beginPath();X.arc(s.hx,s.hy,7,0,7);X.fillStyle=F(sk);X.fill();X.stroke();
+X.restore()}
+</script></html>
