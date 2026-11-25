@@ -1,0 +1,73 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+// Printing the set
+void printset(set<int> s) {
+    for (auto &c : s)
+    {
+        cout << c << " ";
+    }
+    cout << endl;
+}
+
+int main() {
+    set<int> s;
+    s = {24 , 74 , 1 , 58 , 99 , 50 , 84 , 67 , 5 , 50 , 50,};
+
+    // if in this set 14 is ther are not
+    auto it14 = s.lower_bound(14);
+    if(it14 != s.end() && *it14 == 14) {
+        cout << "14 exists in the vector : " << *it14 << endl;
+    }
+    else {
+        cout << "14 does not exists in the vector" << endl;
+    }
+
+    // if in this set 67 is ther are not
+    auto it67 = s.lower_bound(67);
+    if(it67 != s.end() && *it67 == 67) {
+        cout << "67 exists in the vector : " << *it67 << endl;
+    }
+    else {
+        cout << "67 does not exists in the vector" << endl;
+    }
+
+    // First value in this set after sorting 
+    cout << "First value after sorting this set : "<< *s.begin() << endl;
+    
+
+    // Second value in this set after   
+    auto it1 = s.begin();
+    it1++;
+    cout << "second value after sorting this set : "<< *it1 << endl;
+
+    
+    // Last value in this set after  
+    cout << "Last value after sorting this set : "<< *s.rbegin() << endl;
+
+    auto it2 = s.rbegin();
+    it2++;
+    cout << "Last but one value after sorting this set : "<< *it2 << endl;
+
+
+    // Number of elements in this set after   
+    cout << "number of elements of this set is : " << s.size() << endl;
+
+
+    // print true if set is not empty, false if set is empty
+    cout << "set is not empty :" << !s.empty() << endl;
+
+
+    // removing after 50 in this set
+    s.erase(50);
+    cout << "removing after 50 : ";
+    printset(s);
+
+    // 50 after elements is this 
+    if(!s.empty()) {
+        s.erase(s.begin());
+        cout << "removing after first elements : ";
+    }
+    printset(s);
+    
+}

@@ -1,0 +1,58 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+    vector<int> v;
+    v = {24 , 74 , 1 , 58 , 99 , 50 , 84 , 67 , 5 , 50 , 50,};
+
+    // after sorting the vector
+    sort(v.begin(), v.end());
+
+    // if in this vector 14 is ther are not
+    auto it14 = lower_bound(v.begin(), v.end() , 14);
+    if(it14 != v.end() && *it14 == 14) {
+        cout << "14 exists in the vector : " << *it14 << endl;
+    }
+    else {
+        cout << "14 does not exists in the vector" << endl;
+    }
+
+    // if in this vector 67 is ther are not
+    auto it67 = lower_bound(v.begin(), v.end() , 67);
+    if(it67 != v.end() && *it67 == 67) {
+        cout << "67 exists in the vector : " << *it67 << endl;
+    }
+    else {
+        cout << "67 does not exists in the vector" << endl;
+    }
+
+    // after sorting 50's count 
+    auto low = lower_bound(v.begin() , v.end() , 50);
+    auto up = upper_bound(v.begin() , v.end() , 50);
+    cout << up - low << "\n";
+        
+    // 50 after elements is this 
+    auto it50 = upper_bound(v.begin() , v.end() , 50);
+    if(it50 != v. end()) {
+        cout << "50 next value : " << *it50 << endl;
+    }
+
+    // First value in this vector after sorting 
+    cout << "First value after sorting this vector : "<< v[0] << endl;
+    
+    // Last value in this vector after sorting 
+    cout << "Last value after sorting this vector : "<< v[v.size() - 1] << endl;
+
+    // second value in this vector after sorting 
+    cout << "second value after sorting this vector : "<< v[1] << endl;
+
+    // Last but one value in this vector after sorting 
+    cout << "Last but one value after sorting this vector : "<< v[v.size() - 2] << endl;
+
+    // Number of elements in this vector after sorting 
+    cout << "number of elements in this vector is : " << v.size() << endl;
+
+    // print true if vector is not empty, false if vector is empty
+    cout << "vector is not empty : " << !v.empty() << endl;
+    
+}
