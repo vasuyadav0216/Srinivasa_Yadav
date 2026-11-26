@@ -34,5 +34,4 @@ int main()
     }
     int total = ((h*w)-count);
     cout << total << endl;
-
 }

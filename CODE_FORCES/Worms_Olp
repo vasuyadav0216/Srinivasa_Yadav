@@ -1,0 +1,33 @@
+#include <bits/stdc++.h>
+using namespace std;
+#define ll long long int
+
+int main() {
+    ll t;
+    cin >> t;
+    vector<int> v(t);
+    for (int i = 0; i < t; i++) {
+        cin >> v[i];
+    }
+    //prefix sum
+    vector<int> pre(t);
+    pre[0] = v[0];
+    for (int i = 1; i < t; i++) {
+        pre[i] = pre[i-1] + v[i];
+    }
+
+    int q;  cin >> q;
+    while (q--) {
+        int n; cin >> n;
+
+        auto it = lower_bound(pre.begin(),pre.end(), n);
+        if(it != pre.end() && *it == n){
+            cout << (it - pre.begin()) + 1<< endl;
+        }
+        
+        else if(it != pre.end() && *it != n) {
+            cout << (it - pre.begin()) + 1 << endl;
+        }
+    }
+    
+} 
