@@ -191,6 +191,39 @@
             "}"
         ],
         "description": "If else statement"
+    },
+
+
+    "binary_Search" : {
+        "prefix": "faaaa",
+    "body" :[
+        "#include <bits/stdc++.h>",
+        "using namespace std;",
+        "#define ll long long int",
+        "",
+        "bool check(ll m , ll s){",
+            "   return m*(m+3) / 2 >= s;",
+        "}",
+        "",
+        "ll binary_Search(ll s) {",
+        "   ll l = 0 , r = 1e9;",
+            "   while (l < r) {",
+                "       ll mid = l + (r-l) / 2;",
+                "",
+                "    if(check(mid , s)){",
+                    "         r = mid;",
+                "       }",
+                "      else {",
+                    "         l = mid + 1;",
+                "       }",
+            "   }",
+            "   return l;",
+        "}",
+        "   ",
+        "int main() {",
+        "",
+        "}"
+        ]
     }
 
     
