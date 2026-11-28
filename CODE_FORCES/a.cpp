@@ -24,7 +24,7 @@ ll binary_Search(ll n , ll h , vector<ll> v) {
         ll mid = l + (r - l) / 2;
         if (check(mid , n , h , v)) {
             r = mid;
-        }
+        } 
         else
             l = mid + 1;
     }

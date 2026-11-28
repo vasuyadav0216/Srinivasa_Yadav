@@ -1,0 +1,55 @@
+#include <bits/stdc++.h>
+using namespace std;
+#define ll long long int
+
+bool check(ll k , ll h , map <ll , ll> ma) {
+    ll sum = 0;
+    for(auto &[key , value] : ma) {
+        sum += value / k;
+    }
+    if(sum >= h)
+        return true;
+    else
+        return false;
+
+}
+
+ll binary_Search(ll n , ll m , map <ll , ll> ma) {
+
+    ll l = 0, r = 1e9;
+    while(l < r) {
+        ll mid = l + (r - l) / 2;
+
+        if (!check(mid , n , ma)) {
+            r = mid;
+        } 
+        else
+            l = mid + 1;
+    }
+    return l-1;
+}
+
+int main() {
+    ll n , m; cin >> n >> m;
+    vector<ll> v(m);
+    for (ll i = 0; i < m; i++) {
+        cin >> v[i];
+    }
+    sort(v.begin() , v.end());
+    map<ll , ll> ma;
+    for (ll i = 0; i < m; i++) {
+        ma[v[i]]++;
+    }
+    if(n > m) {
+        cout << "0" << endl;
+    }
+    else {
+        cout << binary_Search(n , m , ma) << endl;
+    }
+    // for (ll i = 0; i < m; i++) {
+    //     cout << v[i] << " ";
+    // }
+    // for (auto [k , v] : ma) {
+    //     cout << k << " --> " << v << endl;
+    // }
+}
